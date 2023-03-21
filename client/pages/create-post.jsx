@@ -2,7 +2,9 @@
 import FormField from "@/components/FormField";
 import Loader from "@/components/Loader";
 import { getRandomPrompot } from "@/utils";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { motion } from "framer-motion";
 // import { getRandomPrompts } from "../utils";
 
 const createpost = () => {
@@ -15,8 +17,33 @@ const createpost = () => {
   const [generatingImg, setGeneratingImg] = useState(false);
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = () => {};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (form.prompt && form.photo) {
+      setLoading(true);
+
+      try {
+        const response = await fetch("http://localhost:4000/api/post", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(form),
+        });
+        await response.json();
+        router.push("/");
+      } catch (error) {
+        alert(error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert("Please enter a prompt");
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -31,16 +58,19 @@ const createpost = () => {
     if (form.prompt) {
       try {
         setGeneratingImg(true);
-        const response = await fetch("http://localhost:4000/api/create", {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ prompt: form.prompt }),
-        });
+        const response = await fetch(
+          "https://ai-image-generator-ochre.vercel.app/api/create",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({ prompt: form.prompt }),
+          }
+        );
 
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` });
       } catch (error) {
         alert(error);
@@ -53,9 +83,20 @@ const createpost = () => {
   };
 
   return (
-    <section className="max-w-7xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+      exit={{ opacity: 0 }}
+      className="max-w-7xl mx-auto pb-20"
+    >
       <div>
-        <h1 className="font-extrabold text-[#222328] text-[32px]">Create</h1>
+        <h1 className="font-extrabold text-[#222328] text-[32px]">
+          <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
+            Create{" "}
+          </span>
+          your stunning AI generated Image
+        </h1>
         <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">
           Create imaginative and visually stunning images through Toolname and
           share them with the community
@@ -124,7 +165,7 @@ const createpost = () => {
           </button>
         </div>
       </form>
-    </section>
+    </motion.div>
   );
 };
 

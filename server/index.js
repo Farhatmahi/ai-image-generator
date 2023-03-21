@@ -5,15 +5,16 @@ const dotenv = require("dotenv");
 const port = process.env.PORT || 4000;
 const connectDB = require("./mongodb/connect");
 const postRoutes = require("./routes/postRoutes");
-const createRoute = require("./routes/createRoutes");
+const createRoutes = require("./routes/createRoutes");
 
 //middlewares
 dotenv.config();
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(cors());
 
 //routes
-app.use("/api/create", createRoute);
+app.use("/api/create", createRoutes);
+app.use("/api/post", postRoutes);
 
 //server
 app.get("/", (req, res) => {
